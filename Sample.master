@@ -1,0 +1,162 @@
+<%@ Master Language="VB" CodeFile="Sample.master.vb" Inherits="lgSample" ClientIDMode="static" %>
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+  <title>ISGEC-Common Application</title>
+  <link rel="SHORTCUT ICON" type="image/x-icon" runat="server" href="~/isgec.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <!--JQuery 3.3-->
+  <script type="text/javascript" src="/../UserRights/jq3.3/jquery-3.3.1.min.js"></script>
+  <!-- Font 4.7-->
+  <link href="/../UserRights/fa4.7/css/font-awesome.min.css" rel="stylesheet" />
+  <!--Bootstrap 4.0 uses Jquery 3 or above, Popper & Tooltip-->
+  <link rel="stylesheet" href="/../UserRights/bs4.0/css/bootstrap.min.css" />
+  <script type="text/javascript" src="/../UserRights/Popper1.0/Popper.min.js"></script>
+  <script type="text/javascript" src="/../UserRights/bs4.0/js/bootstrap.min.js"></script>
+  <style>
+    .autocomplete_completionListElement {
+      visibility: hidden;
+      margin: 0px !important;
+      background-color: inherit;
+      color: windowtext;
+      border: buttonshadow;
+      border-width: 1px;
+      border-style: solid;
+      cursor: default;
+      overflow: auto;
+      max-height: 60%;
+      text-align: left;
+      list-style-type: none;
+      font: Courier;
+      z-index: 10000001 !important;
+      padding: 0px;
+      width: 70% !important;
+    }
+
+      .autocomplete_completionListElement li {
+        font-size: medium;
+      }
+
+    .autocomplete_highlightedListItem {
+      background-color: buttonshadow;
+      color: #FFFFFF;
+    }
+
+    .autocomplete_listItem {
+      background-color: #ebe6e6;
+      color: windowtext;
+    }
+  </style>
+  <style>
+    .chartDiv {
+      overflow-x: scroll;
+      margin: 15px auto;
+      padding: 0px 0px 6px 0px;
+      text-align: center;
+      /*background: #e3e3e3;*/
+      color: #333333;
+      -moz-border-radius: 5px;
+      -webkit-border-radius: 5px;
+      border-radius: 5px;
+      border: 1px solid gray;
+    }
+  </style>
+  <style>
+    .sidenav {
+      height: 100%;
+      width: 0;
+      position: fixed;
+      z-index: 1;
+      top: 0;
+      left: 0;
+      background-color: #111;
+      overflow-x: hidden;
+      transition: 0.5s;
+      padding-top: 60px;
+    }
+
+      .sidenav a {
+        padding: 8px 8px 8px 32px;
+        text-decoration: none;
+        /*font-size: 25px;*/
+        /*color: #818181;*/
+        color:chartreuse;
+        display: block;
+        transition: 0.3s;
+      }
+
+        .sidenav a:hover {
+          color: #f1f1f1;
+        }
+
+      .sidenav .closebtn {
+        position: absolute;
+        top: 0;
+        right: 25px;
+        font-size: 36px;
+        margin-left: 50px;
+      }
+
+    @media screen and (max-height: 450px) {
+      .sidenav {
+        padding-top: 15px;
+      }
+
+        .sidenav a {
+          font-size: 18px;
+        }
+    }
+  </style>
+  <script>
+    function openNav() {
+      document.getElementById("mySidenav").style.width = "250px";
+    }
+
+    function closeNav() {
+      document.getElementById("mySidenav").style.width = "0";
+    }
+  </script>
+
+  <asp:ContentPlaceHolder ID="cphMain" runat="server" EnableViewState="true">
+  </asp:ContentPlaceHolder>
+</head>
+<body>
+  <form id="form1" runat="server">
+    <asp:ScriptManager ID="ToolkitScriptManager1" EnableScriptGlobalization="true" runat="server" EnablePageMethods="true" AsyncPostBackTimeout="3600" EnableScriptLocalization="True" ScriptMode="Auto">
+      <Scripts>
+        <asp:ScriptReference Path="/../UserRights/jquery/webkit.js" />
+      </Scripts>
+    </asp:ScriptManager>
+    <LGM:BSLoading ID="LGLoadingM" runat="server" />
+    <script type="text/javascript">
+      Sys.WebForms.PageRequestManager.getInstance().add_endRequest(hideProcessingMPV);
+      Sys.WebForms.PageRequestManager.getInstance().add_beginRequest(showProcessingMPV);
+      function groupClicked(p) {
+        var tbl = p.parentElement.parentElement;
+        var o = p.parentElement.rowIndex;
+        for (ii = 0; ii <= tbl.rows.length - 1; ii++) {
+          if (ii > o) {
+            if (tbl.rows[ii].id != '')
+              return;
+            if (tbl.rows[ii].style.display == 'none')
+              tbl.rows[ii].style.display = '';
+            else
+              tbl.rows[ii].style.display = 'none';
+          }
+        }
+      }
+      function dc(o, p) {
+        var dec = /^-?\d+(?:\.\d{0,6})?$/;
+        var v = o.value;
+        if (v.match(dec)) {
+          o.value = parseFloat(v).toFixed(p);
+        } else {
+          o.value = parseFloat('0').toFixed(p);
+        }
+      }
+    </script>
+    <asp:ContentPlaceHolder ID="cph1" runat="server" EnableViewState="true">
+    </asp:ContentPlaceHolder>
+  </form>
+</body>
+</html>
