@@ -13,102 +13,106 @@ Partial Class CreateRFQ
       IndentNo = Request.QueryString("IndentNo")
     End If
     If IndentNo = "" Then Exit Sub
-    Comp = SIS.RFQ.rfqGeneral.GetERPCompanyByIndentNo(IndentNo)
-    '1. Get Indent From ERP
-    Dim Indent As SIS.TDPUR.tdpur200 = SIS.TDPUR.tdpur200.tdpur200GetByID(IndentNo, Comp)
-    If Indent.t_rqst <> 3 Then
-      ShowMsg("Indent must be approved.")
-      Exit Sub
-    End If
-    '2. Get Indent Lines From ERP
-    Dim IndentLines As List(Of SIS.TDPUR.tdpur201) = SIS.TDPUR.tdpur201.GetByRQNo(IndentNo, Comp)
-    '3. Check RFQ for All Indent Lines
-    Dim CreateWFID As String = ""
-    For Each IndentLine As SIS.TDPUR.tdpur201 In IndentLines
-      Dim tmp As SIS.WF.wfPreOrder = SIS.WF.wfPreOrder.GetByIndentLine(IndentLine.t_rqno, IndentLine.t_pono)
-      '==============Check, If there is child Items then only Create=================
-      Dim tmpDocs As List(Of SIS.TDISG.tdisg003) = SIS.TDISG.tdisg003.GetDocument(IndentLine.t_rqno, IndentLine.t_pono)
-      If tmpDocs.Count <= 0 Then
-        Continue For
+    Try
+      Comp = SIS.RFQ.rfqGeneral.GetERPCompanyByIndentNo(IndentNo)
+      '1. Get Indent From ERP
+      Dim Indent As SIS.TDPUR.tdpur200 = SIS.TDPUR.tdpur200.tdpur200GetByID(IndentNo, Comp)
+      If Indent.t_rqst <> 3 Then
+        ShowMsg("Indent must be approved.")
+        Exit Sub
       End If
-      '===============End Of Check===================================================
-      If tmp Is Nothing Then
-        '4. Create NEW WFID
-        Dim newWF As New SIS.WF.wfPreOrder
-        With newWF
-          .Buyer = IIf(Indent.t_ccon.Length < 4, Right("0000" & Indent.t_ccon, 4), Indent.t_ccon)
-          .DateTime = Now
-          .Element = IndentLine.t_cspa & "-" & IndentLine.ElementName
-          .IndentLine = IndentLine.t_pono
-          .IndentNo = IndentLine.t_rqno
-          .LotItem = IndentLine.t_item
-          .Parent_WFID = 0
-          .Project = IndentLine.t_cprj & "-" & IndentLine.ProjectName
-          .SpecificationNo = IndentLine.t_nids
-          .UserId = IIf(Indent.t_remn.Length < 4, Right("0000" & Indent.t_remn, 4), Indent.t_remn)
-          .WF_Status = "Technical Specification Released"
-          .PMDLDocNo = "Created From Indent/Line No.: " & IndentLine.t_rqno & "/" & IndentLine.t_pono
-        End With
-        tmp = SIS.WF.wfPreOrder.InsertData(newWF)
-        '======Update CT======
-        Insert168(newWF, Comp)
-        '=====================
-        CreateWFID &= IIf(CreateWFID = "", "", ", ")
-        CreateWFID &= tmp.WFID
-        '5. Create WF History
-        Dim newWFH As New SIS.WF.wfPreOrderHistory
-        With newWFH
-          .WFID = tmp.WFID
-          .WFID_SlNo = 1
-          .Parent_WFID = 0
-          .Element = tmp.Element
-          .Project = tmp.Project
-          .SpecificationNo = tmp.SpecificationNo
-          .Buyer = tmp.Buyer
-          .WF_Status = tmp.WF_Status
-          .UserId = tmp.UserId
-          .DateTime = tmp.DateTime
-          .IndentLine = tmp.IndentLine
-          .IndentNo = tmp.IndentNo
-          .LotItem = tmp.LotItem
-          .PMDLDocNo = tmp.PMDLDocNo
-        End With
-        newWFH = SIS.WF.wfPreOrderHistory.InsertData(newWFH)
-        '=====Update CT========
-        Insert169(newWFH, Comp)
-        '======================
-        '6. Create WF PMDL Docs
-        'Dim tmpDocs As List(Of SIS.TDISG.tdisg003) = SIS.TDISG.tdisg003.GetDocument(IndentLine.t_rqno, IndentLine.t_pono)
-        For Each doc As SIS.TDISG.tdisg003 In tmpDocs
-          Dim newDoc As New SIS.WF.wfPreOrderPMDL
-          With newDoc
-            .WFID = tmp.WFID
-            .PMDLDocNo = doc.t_docn
+      '2. Get Indent Lines From ERP
+      Dim IndentLines As List(Of SIS.TDPUR.tdpur201) = SIS.TDPUR.tdpur201.GetByRQNo(IndentNo, Comp)
+      '3. Check RFQ for All Indent Lines
+      Dim CreateWFID As String = ""
+      For Each IndentLine As SIS.TDPUR.tdpur201 In IndentLines
+        Dim tmp As SIS.WF.wfPreOrder = SIS.WF.wfPreOrder.GetByIndentLine(IndentLine.t_rqno, IndentLine.t_pono)
+        '==============Check, If there is child Items then only Create=================
+        Dim tmpDocs As List(Of SIS.TDISG.tdisg003) = SIS.TDISG.tdisg003.GetDocument(IndentLine.t_rqno, IndentLine.t_pono)
+        If tmpDocs.Count <= 0 Then
+          Continue For
+        End If
+        '===============End Of Check===================================================
+        If tmp Is Nothing Then
+          '4. Create NEW WFID
+          Dim newWF As New SIS.WF.wfPreOrder
+          With newWF
+            .Buyer = IIf(Indent.t_ccon.Length < 4, Right("0000" & Indent.t_ccon, 4), Indent.t_ccon)
+            .DateTime = Now
+            .Element = IndentLine.t_cspa & "-" & IndentLine.ElementName
+            .IndentLine = IndentLine.t_pono
+            .IndentNo = IndentLine.t_rqno
+            .LotItem = IndentLine.t_item
+            .Parent_WFID = 0
+            .Project = IndentLine.t_cprj & "-" & IndentLine.ProjectName
+            .SpecificationNo = IndentLine.t_nids
+            .UserId = IIf(Indent.t_remn.Length < 4, Right("0000" & Indent.t_remn, 4), Indent.t_remn)
+            .WF_Status = "Technical Specification Released"
+            .PMDLDocNo = "Indent/Line No.: " & IndentLine.t_rqno & "/" & IndentLine.t_pono
           End With
-          Try
-            SIS.WF.wfPreOrderPMDL.InsertData(newDoc)
-            '=====Update CT========
-            Insert167(newDoc, Comp)
-            '======================
-            '7. Copy Handle To WFID
-            Dim aFile As SIS.EDI.ediAFile = SIS.EDI.ediAFile.ediAFileGetByHandleIndex("DOCUMENTMASTERPDF_" & Comp, doc.t_docn & "_" & doc.t_revi)
-            If aFile IsNot Nothing Then
-              aFile.t_hndl = "J_PREORDER_WORKFLOW"
-              aFile.t_indx = tmp.WFID
-            End If
-            SIS.EDI.ediAFile.InsertData(aFile, Comp)
-          Catch ex As Exception
-          End Try
-        Next
+          tmp = SIS.WF.wfPreOrder.InsertData(newWF)
+          '======Update CT======
+          Insert168(newWF, Comp)
+          '=====================
+          CreateWFID &= IIf(CreateWFID = "", "", ", ")
+          CreateWFID &= tmp.WFID
+          '5. Create WF History
+          Dim newWFH As New SIS.WF.wfPreOrderHistory
+          With newWFH
+            .WFID = tmp.WFID
+            .WFID_SlNo = 1
+            .Parent_WFID = 0
+            .Element = tmp.Element
+            .Project = tmp.Project
+            .SpecificationNo = tmp.SpecificationNo
+            .Buyer = tmp.Buyer
+            .WF_Status = tmp.WF_Status
+            .UserId = tmp.UserId
+            .DateTime = tmp.DateTime
+            .IndentLine = tmp.IndentLine
+            .IndentNo = tmp.IndentNo
+            .LotItem = tmp.LotItem
+            .PMDLDocNo = tmp.PMDLDocNo
+          End With
+          newWFH = SIS.WF.wfPreOrderHistory.InsertData(newWFH)
+          '=====Update CT========
+          Insert169(newWFH, Comp)
+          '======================
+          '6. Create WF PMDL Docs
+          'Dim tmpDocs As List(Of SIS.TDISG.tdisg003) = SIS.TDISG.tdisg003.GetDocument(IndentLine.t_rqno, IndentLine.t_pono)
+          For Each doc As SIS.TDISG.tdisg003 In tmpDocs
+            Dim newDoc As New SIS.WF.wfPreOrderPMDL
+            With newDoc
+              .WFID = tmp.WFID
+              .PMDLDocNo = doc.t_docn
+            End With
+            Try
+              SIS.WF.wfPreOrderPMDL.InsertData(newDoc)
+              '=====Update CT========
+              Insert167(newDoc, Comp)
+              '======================
+              '7. Copy Handle To WFID
+              Dim aFile As SIS.EDI.ediAFile = SIS.EDI.ediAFile.ediAFileGetByHandleIndex("DOCUMENTMASTERPDF_" & Comp, doc.t_docn & "_" & doc.t_revi)
+              If aFile IsNot Nothing Then
+                aFile.t_hndl = "J_PREORDER_WORKFLOW"
+                aFile.t_indx = tmp.WFID
+              End If
+              SIS.EDI.ediAFile.InsertData(aFile, Comp)
+            Catch ex As Exception
+            End Try
+          Next
+        End If
+      Next
+      If CreateWFID = "" Then
+        ShowMsg("RFQ Workflow already created.")
+      Else
+        ShowMsg("RFQ Workflow: " & CreateWFID & " created.")
       End If
-    Next
-    If CreateWFID = "" Then
-      ShowMsg("RFQ Workflow already created.")
-    Else
-      ShowMsg("RFQ Workflow: " & CreateWFID & " created.")
-    End If
+    Catch ex As Exception
+      ShowMsg("Err: " & ex.Message)
+    End Try
   End Sub
-  Private Sub Insert168(ByVal pWF As SIS.WF.wfPreOrder, ByVal Comp As String)
+  Private Function Insert168(ByVal pWF As SIS.WF.wfPreOrder, ByVal Comp As String) As String
     Dim Sql As String = ""
     Sql &= "   INSERT [tdmisg168" & Comp & "] "
     Sql &= "   ( "
@@ -142,12 +146,12 @@ Partial Class CreateRFQ
     Sql &= "   ,'" & pWF.Buyer & "'"
     Sql &= "   ,'" & pWF.WF_Status & "'"
     Sql &= "   ,'" & pWF.UserId & "'"
-    Sql &= "   ,'" & pWF.DateTime & "'"
+    Sql &= "   ,convert(datetime,'" & pWF.DateTime & "',103)"
     Sql &= "   ,'" & pWF.Supplier & "'"
     Sql &= "   ,'" & pWF.SupplierName & "'"
     Sql &= "   ,'" & pWF.RandomNo & "'"
     Sql &= "   ,'" & pWF.PMDLDocNo & "'"
-    Sql &= "   ,'" & pWF.Manager & "'"
+    Sql &= "   ,'" & pWF.LotItem & "'"
     Sql &= "   ,'" & pWF.ReceiptNo & "'"
     Sql &= "   ,'" & pWF.Manager & "'"
     Sql &= "   ,'" & pWF.EmailSubject & "'"
@@ -159,11 +163,16 @@ Partial Class CreateRFQ
         Cmd.CommandType = CommandType.Text
         Cmd.CommandText = Sql
         Con.Open()
-        Cmd.ExecuteNonQuery()
+        Try
+          Cmd.ExecuteNonQuery()
+        Catch ex As Exception
+          Throw New Exception(sql)
+        End Try
       End Using
     End Using
-  End Sub
-  Private Sub Insert169(ByVal pWFh As SIS.WF.wfPreOrderHistory, ByVal Comp As String)
+    Return ""
+  End Function
+  Private Function Insert169(ByVal pWFh As SIS.WF.wfPreOrderHistory, ByVal Comp As String) As String
     Dim Sql As String = ""
     Sql &= "   INSERT [tdmisg169" & Comp & "] "
     Sql &= "   ( "
@@ -198,7 +207,7 @@ Partial Class CreateRFQ
     Sql &= "   ,'" & pWFh.Buyer & "'"
     Sql &= "   ,'" & pWFh.WF_Status & "'"
     Sql &= "   ,'" & pWFh.UserId & "'"
-    Sql &= "   ,'" & pWFh.DateTime & "'"
+    Sql &= "   ,convert(datetime,'" & pWFh.DateTime & "',103)"
     Sql &= "   ,'" & pWFh.Supplier & "'"
     Sql &= "   ,'" & pWFh.SupplierName & "'"
     Sql &= "   ,'" & pWFh.Notes & "'"
@@ -212,11 +221,15 @@ Partial Class CreateRFQ
         Cmd.CommandType = CommandType.Text
         Cmd.CommandText = Sql
         Con.Open()
-        Cmd.ExecuteNonQuery()
+        Try
+          Cmd.ExecuteNonQuery()
+        Catch ex As Exception
+          Throw New Exception(Sql)
+        End Try
       End Using
     End Using
-
-  End Sub
+    Return ""
+  End Function
   Private Sub Insert167(ByVal pWFpmdl As SIS.WF.wfPreOrderPMDL, ByVal Comp As String)
     Dim Sql As String = ""
     Sql &= "   INSERT [tdmisg167" & Comp & "] "
@@ -246,4 +259,35 @@ Partial Class CreateRFQ
   Private Sub ShowMsg(ByVal str As String)
     msg.InnerHtml = "<h2>" & str & "</h2>"
   End Sub
+
+  'Private Sub cmdImport_Click(sender As Object, e As EventArgs) Handles cmdImport.Click
+  '  Dim wfs As New List(Of SIS.WF.wfPreOrder)
+  '  Using Con As SqlConnection = New SqlConnection(SIS.SYS.SQLDatabase.DBCommon.GetConnectionString())
+  '    Using Cmd As SqlCommand = Con.CreateCommand()
+  '      Cmd.CommandType = CommandType.Text
+  '      Cmd.CommandText = "SELECT * FROM WF1_PreOrder WHERE (LEFT(Project, 6) IN ('JB1123', 'JB1124', 'JB1126', 'JB1130')) and wfid not in (2971,	2970,	2969,	2968,	2967,	2966,	2965,	2964,	2963,	2962,	2961,	2960,	2959,	2958,	2957,	2956,	2955,	2954,	2953,	2952,	2951,	2950,	2949,	2948,	2935,	2934,	2933,	2932,	2931,	2930,	2929,	2892,	2891,	2890,	2889,	2888,	2887,	2886,	2885,	2884,	2784,	2783,	2782,	2781,	2743,	2718,	2717,	2716,	2715,	2714,	2713,	2712,	2711,	2710,	2697,	2696,	2695,	2694,	2690,	2663,	2656,	2655,	2654,	2652,	2651,	2650,	2649,	2645,	2640,	2637,	2634,	2631,	2627,	2602,	2601,	2600,	2599,	2598,	2597,	2596,	2595,	2594,	2593,	2592,	2591,	2204,	2203,	2202,	2201,	2200,	2199,	2198,	2196,	2188,	2187,	2186,	2185,	2184,	2183,	2182,	2181,	2180,	2179)"
+  '      Con.Open()
+  '      Dim Reader As SqlDataReader = Cmd.ExecuteReader()
+  '      While Reader.Read()
+  '        wfs.Add(New SIS.WF.wfPreOrder(Reader))
+  '      End While
+  '      Reader.Close()
+  '    End Using
+  '  End Using
+  '  For Each wf As SIS.WF.wfPreOrder In wfs
+  '    Try
+  '      Insert168(wf, "200")
+  '      Dim wfhs As List(Of SIS.WF.wfPreOrderHistory) = SIS.WF.wfPreOrderHistory.GetByWFID(wf.WFID)
+  '      For Each wfh As SIS.WF.wfPreOrderHistory In wfhs
+  '        Try
+  '          Insert169(wfh, "200")
+  '        Catch ex As Exception
+  '          Dim x As String = ex.Message
+  '        End Try
+  '      Next
+  '    Catch ex As Exception
+  '      Dim x As String = ex.Message
+  '    End Try
+  '  Next
+  'End Sub
 End Class

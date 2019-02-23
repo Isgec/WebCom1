@@ -10,6 +10,7 @@
     <form id="form1" runat="server">
     <div id="msg" runat="server">
     </div>
+<%--      <asp:Button ID="cmdImport" runat="server" Text="import" />--%>
     </form>
 </body>
 </html>
