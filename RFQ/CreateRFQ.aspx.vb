@@ -13,6 +13,7 @@ Partial Class CreateRFQ
       IndentNo = Request.QueryString("IndentNo")
     End If
     If IndentNo = "" Then Exit Sub
+    Dim LineNo As Integer = 0
     Try
       Comp = SIS.RFQ.rfqGeneral.GetERPCompanyByIndentNo(IndentNo)
       '1. Get Indent From ERP
@@ -26,6 +27,7 @@ Partial Class CreateRFQ
       '3. Check RFQ for All Indent Lines
       Dim CreateWFID As String = ""
       For Each IndentLine As SIS.TDPUR.tdpur201 In IndentLines
+        LineNo = IndentLine.t_pono
         Dim tmp As SIS.WF.wfPreOrder = SIS.WF.wfPreOrder.GetByIndentLine(IndentLine.t_rqno, IndentLine.t_pono)
         '==============Check, If there is child Items then only Create=================
         Dim tmpDocs As List(Of SIS.TDISG.tdisg003) = SIS.TDISG.tdisg003.GetDocument(IndentLine.t_rqno, IndentLine.t_pono)
@@ -34,6 +36,9 @@ Partial Class CreateRFQ
         End If
         '===============End Of Check===================================================
         If tmp Is Nothing Then
+          '=======================LOG============================
+          LogIt(IndentNo, IndentLine.t_pono, logStates.Create)
+          '======================================================
           '4. Create NEW WFID
           Dim newWF As New SIS.WF.wfPreOrder
           With newWF
@@ -51,9 +56,18 @@ Partial Class CreateRFQ
             .PMDLDocNo = "Indent/Line No.: " & IndentLine.t_rqno & "/" & IndentLine.t_pono
           End With
           tmp = SIS.WF.wfPreOrder.InsertData(newWF)
+          '=======================LOG============================
+          'LogIt(IndentNo, IndentLine.t_pono, logStates.PreOrder)
+          '======================================================
+          '=======================LOG============================
+          LogIt(IndentNo, IndentLine.t_pono, logStates.WFID, tmp.WFID)
+          '======================================================
           '======Update CT======
           Insert168(newWF, Comp)
           '=====================
+          '=======================LOG============================
+          LogIt(IndentNo, IndentLine.t_pono, logStates.CT168)
+          '======================================================
           CreateWFID &= IIf(CreateWFID = "", "", ", ")
           CreateWFID &= tmp.WFID
           '5. Create WF History
@@ -75,9 +89,15 @@ Partial Class CreateRFQ
             .PMDLDocNo = tmp.PMDLDocNo
           End With
           newWFH = SIS.WF.wfPreOrderHistory.InsertData(newWFH)
+          '=======================LOG============================
+          LogIt(IndentNo, IndentLine.t_pono, logStates.History)
+          '======================================================
           '=====Update CT========
           Insert169(newWFH, Comp)
           '======================
+          '=======================LOG============================
+          LogIt(IndentNo, IndentLine.t_pono, logStates.CT169)
+          '======================================================
           '6. Create WF PMDL Docs
           'Dim tmpDocs As List(Of SIS.TDISG.tdisg003) = SIS.TDISG.tdisg003.GetDocument(IndentLine.t_rqno, IndentLine.t_pono)
           For Each doc As SIS.TDISG.tdisg003 In tmpDocs
@@ -88,9 +108,15 @@ Partial Class CreateRFQ
             End With
             Try
               SIS.WF.wfPreOrderPMDL.InsertData(newDoc)
+              '=======================LOG============================
+              LogIt(IndentNo, IndentLine.t_pono, logStates.PMDL, doc.t_docn)
+              '======================================================
               '=====Update CT========
               Insert167(newDoc, Comp)
               '======================
+              '=======================LOG============================
+              LogIt(IndentNo, IndentLine.t_pono, logStates.CT167, "CT")
+              '======================================================
               '7. Copy Handle To WFID
               Dim aFile As SIS.EDI.ediAFile = SIS.EDI.ediAFile.ediAFileGetByHandleIndex("DOCUMENTMASTERPDF_" & Comp, doc.t_docn & "_" & doc.t_revi)
               If aFile IsNot Nothing Then
@@ -98,7 +124,13 @@ Partial Class CreateRFQ
                 aFile.t_indx = tmp.WFID
               End If
               SIS.EDI.ediAFile.InsertData(aFile, Comp)
+              '=======================LOG============================
+              LogIt(IndentNo, IndentLine.t_pono, logStates.HNDL)
+              '======================================================
             Catch ex As Exception
+              '=======================LOG============================
+              LogIt(IndentNo, IndentLine.t_pono, logStates.Err, "At Doc: " & doc.t_docn & ":" & ex.Message)
+              '======================================================
             End Try
           Next
         End If
@@ -109,6 +141,9 @@ Partial Class CreateRFQ
         ShowMsg("RFQ Workflow: " & CreateWFID & " created.")
       End If
     Catch ex As Exception
+      '=======================LOG============================
+      LogIt(IndentNo, LineNo, logStates.Err, "Any Where: " & ex.Message)
+      '======================================================
       ShowMsg("Err: " & ex.Message)
     End Try
   End Sub
@@ -260,6 +295,56 @@ Partial Class CreateRFQ
     msg.InnerHtml = "<h2>" & str & "</h2>"
   End Sub
 
+  Private Enum logStates
+    Create = 1
+    WFID = 2
+    PreOrder = 3
+    CT168 = 4
+    History = 5
+    CT169 = 6
+    PMDL = 7
+    CT167 = 8
+    HNDL = 9
+    Err = 0
+  End Enum
+  Private Sub LogIt(ByVal IndentNo As String, ByVal IndentLine As Integer, ByVal LogFor As logStates, Optional ByVal str As String = "")
+    Dim Sql As String = ""
+
+    Select Case LogFor
+      Case logStates.Create
+        Sql = "Insert WF1_Log (IndentNo,IndentLine,CreatedOn) Values ('" & IndentNo & "'," & IndentLine & ",GetDate())"
+      Case logStates.WFID
+        Sql = "Update WF1_Log set WFID=" & str & ",WFCreated=1 where IndentNo='" & IndentNo & "' and IndentLine=" & IndentLine
+      Case logStates.PreOrder
+        Sql = "Update WF1_Log set WFCreated=1 where IndentNo='" & IndentNo & "' and IndentLine=" & IndentLine
+      Case logStates.CT168
+        Sql = "Update WF1_Log set CT168Created=1 where IndentNo='" & IndentNo & "' and IndentLine=" & IndentLine
+      Case logStates.History
+        Sql = "Update WF1_Log set HistoryCreated=1 where IndentNo='" & IndentNo & "' and IndentLine=" & IndentLine
+      Case logStates.CT169
+        Sql = "Update WF1_Log set CT169Created=1 where IndentNo='" & IndentNo & "' and IndentLine=" & IndentLine
+      Case logStates.PMDL
+        Sql = "Update WF1_Log set PMDLCreated=1,ErrorMsg=ErrorMsg+'|" & str & "' where IndentNo='" & IndentNo & "' and IndentLine=" & IndentLine
+      Case logStates.CT167
+        Sql = "Update WF1_Log set CT167Created=1,ErrorMsg=ErrorMsg+'|" & str & "' where IndentNo='" & IndentNo & "' and IndentLine=" & IndentLine
+      Case logStates.HNDL
+        Sql = "Update WF1_Log set HNDLCreated=1 where IndentNo='" & IndentNo & "' and IndentLine=" & IndentLine
+      Case logStates.Err
+        Sql = "Update WF1_Log set ErrorMsg=ErrorMsg+'|" & str & "' where IndentNo='" & IndentNo & "' and IndentLine=" & IndentLine
+    End Select
+    Using Con As SqlConnection = New SqlConnection(SIS.SYS.SQLDatabase.DBCommon.GetConnectionString())
+      Using Cmd As SqlCommand = Con.CreateCommand()
+        Cmd.CommandType = CommandType.Text
+        Cmd.CommandText = Sql
+        Con.Open()
+        Try
+          Cmd.ExecuteNonQuery()
+        Catch ex As Exception
+          Throw New Exception(Sql)
+        End Try
+      End Using
+    End Using
+  End Sub
   'Private Sub cmdImport_Click(sender As Object, e As EventArgs) Handles cmdImport.Click
   '  Dim wfs As New List(Of SIS.WF.wfPreOrder)
   '  Using Con As SqlConnection = New SqlConnection(SIS.SYS.SQLDatabase.DBCommon.GetConnectionString())
