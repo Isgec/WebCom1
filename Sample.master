@@ -60,6 +60,17 @@
       border-radius: 5px;
       border: 1px solid gray;
     }
+    .boxDiv {
+      margin: 15px auto;
+      padding: 0px 0px 6px 0px;
+      text-align: center;
+      /*background: #e3e3e3;*/
+      color: #333333;
+      -moz-border-radius: 5px;
+      -webkit-border-radius: 5px;
+      border-radius: 5px;
+      border: 1px solid gray;
+    }
   </style>
   <style>
     .sidenav {

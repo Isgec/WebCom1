@@ -34,7 +34,7 @@ Partial Class CreateRFQ
         If tmpDocs.Count <= 0 Then
           Continue For
         End If
-        '===============End Of Check===================================================
+        '===============End Of Check=============================
         If tmp Is Nothing Then
           '=======================LOG============================
           LogIt(IndentNo, IndentLine.t_pono, logStates.Create)
