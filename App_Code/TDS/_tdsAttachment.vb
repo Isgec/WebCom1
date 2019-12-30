@@ -232,7 +232,7 @@ Namespace SIS.TDS
       Using Con As SqlConnection = New SqlConnection(SIS.SYS.SQLDatabase.DBCommon.GetBaaNConnectionString())
         Using Cmd As SqlCommand = Con.CreateCommand()
           Cmd.CommandType = CommandType.Text
-          Cmd.CommandText = "select t_indx as CardNo from ttcisg132200 where t_hndl like 'J_INVESTMENT_DECLARATION' and right(rtrim(t_indx),7)='" & FinYear & "' COLLATE Latin1_General_BIN2"
+          Cmd.CommandText = "select t_indx as CardNo from ttcisg132200 where t_hndl like 'J_INVESTMENT_DECLARATION' and right(rtrim(t_indx),9)='" & FinYear & "' COLLATE Latin1_General_BIN2"
           Con.Open()
           Dim Reader As SqlDataReader = Cmd.ExecuteReader()
           While (Reader.Read())

@@ -138,6 +138,8 @@ Partial Class mTDSAttachments1
       GVdmisg121.PageSize = 25
       'CType(GVdmisg121.HeaderRow.FindControl("D_PageSize"), DropDownList).SelectedIndex = 1
     End If
+    F_FinYear.Text = ConfigurationManager.AppSettings("TDSFinYear").ToString
+
   End Sub
 
   Private Sub cmdRefresh_Click(sender As Object, e As EventArgs) Handles cmdRefresh.Click

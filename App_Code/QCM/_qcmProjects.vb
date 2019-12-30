@@ -165,34 +165,34 @@ Namespace SIS.QCM
     Public Shared Function qcmProjectsSelectCount(ByVal SearchState As Boolean, ByVal SearchText As String) As Integer
       Return _RecordCount
     End Function
-    Public Shared Function InsertData(ByVal Record As SIS.QCM.qcmProjects) As String
-      Dim _Result As String = Record.ProjectID
-      Using Con As SqlConnection = New SqlConnection(SIS.SYS.SQLDatabase.DBCommon.GetConnectionString())
-        Using Cmd As SqlCommand = Con.CreateCommand()
-          Cmd.CommandType = CommandType.StoredProcedure
-          Cmd.CommandText = "spidmProjectsInsert"
-          SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@ProjectID", SqlDbType.NVarChar, 7, Record.ProjectID)
-          SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@Description", SqlDbType.NVarChar, 51, Record.Description)
-          SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@CustomerID", SqlDbType.NVarChar, 7, Convert.DBNull)
-          SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@CustomerOrderReference", SqlDbType.NVarChar, 51, Convert.DBNull)
-          SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@ContactPerson", SqlDbType.NVarChar, 51, Convert.DBNull)
-          SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@EmailID", SqlDbType.NVarChar, 51, Convert.DBNull)
-          SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@ContactNo", SqlDbType.NVarChar, 21, Convert.DBNull)
-          SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@Address1", SqlDbType.NVarChar, 61, Convert.DBNull)
-          SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@Address2", SqlDbType.NVarChar, 61, Convert.DBNull)
-          SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@Address3", SqlDbType.NVarChar, 61, Convert.DBNull)
-          SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@Address4", SqlDbType.NVarChar, 61, Convert.DBNull)
-          SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@ToEMailID", SqlDbType.NVarChar, 251, Convert.DBNull)
-          SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@CCEmailID", SqlDbType.NVarChar, 251, Convert.DBNull)
-          Cmd.Parameters.Add("@Return_ProjectID", SqlDbType.NVarChar, 6)
-          Cmd.Parameters("@Return_ProjectID").Direction = ParameterDirection.Output
-          Con.Open()
-          Cmd.ExecuteNonQuery()
-          _Result = Cmd.Parameters("@Return_ProjectID").Value
-        End Using
-      End Using
-      Return _Result
-    End Function
+    'Public Shared Function InsertData(ByVal Record As SIS.QCM.qcmProjects) As String
+    '  Dim _Result As String = Record.ProjectID
+    '  Using Con As SqlConnection = New SqlConnection(SIS.SYS.SQLDatabase.DBCommon.GetConnectionString())
+    '    Using Cmd As SqlCommand = Con.CreateCommand()
+    '      Cmd.CommandType = CommandType.StoredProcedure
+    '      Cmd.CommandText = "spidmProjectsInsert"
+    '      SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@ProjectID", SqlDbType.NVarChar, 7, Record.ProjectID)
+    '      SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@Description", SqlDbType.NVarChar, 51, Record.Description)
+    '      SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@CustomerID", SqlDbType.NVarChar, 7, Convert.DBNull)
+    '      SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@CustomerOrderReference", SqlDbType.NVarChar, 51, Convert.DBNull)
+    '      SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@ContactPerson", SqlDbType.NVarChar, 51, Convert.DBNull)
+    '      SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@EmailID", SqlDbType.NVarChar, 51, Convert.DBNull)
+    '      SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@ContactNo", SqlDbType.NVarChar, 21, Convert.DBNull)
+    '      SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@Address1", SqlDbType.NVarChar, 61, Convert.DBNull)
+    '      SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@Address2", SqlDbType.NVarChar, 61, Convert.DBNull)
+    '      SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@Address3", SqlDbType.NVarChar, 61, Convert.DBNull)
+    '      SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@Address4", SqlDbType.NVarChar, 61, Convert.DBNull)
+    '      SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@ToEMailID", SqlDbType.NVarChar, 251, Convert.DBNull)
+    '      SIS.SYS.SQLDatabase.DBCommon.AddDBParameter(Cmd, "@CCEmailID", SqlDbType.NVarChar, 251, Convert.DBNull)
+    '      Cmd.Parameters.Add("@Return_ProjectID", SqlDbType.NVarChar, 6)
+    '      Cmd.Parameters("@Return_ProjectID").Direction = ParameterDirection.Output
+    '      Con.Open()
+    '      Cmd.ExecuteNonQuery()
+    '      _Result = Cmd.Parameters("@Return_ProjectID").Value
+    '    End Using
+    '  End Using
+    '  Return _Result
+    'End Function
     Public Shared Function UpdateData(ByVal Record As SIS.QCM.qcmProjects) As String
       Dim _Result As String = Record.ProjectID
       Using Con As SqlConnection = New SqlConnection(SIS.SYS.SQLDatabase.DBCommon.GetConnectionString())
