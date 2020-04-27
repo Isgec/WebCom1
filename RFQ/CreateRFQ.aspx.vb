@@ -3,6 +3,8 @@ Imports System.Collections.Generic
 Imports System.Data
 Imports System.Data.SqlClient
 Imports System.ComponentModel
+Imports ejiVault
+Imports ejiVault.EJI
 
 Partial Class CreateRFQ
   Inherits System.Web.UI.Page
@@ -118,12 +120,12 @@ Partial Class CreateRFQ
               LogIt(IndentNo, IndentLine.t_pono, logStates.CT167, "CT")
               '======================================================
               '7. Copy Handle To WFID
-              Dim aFile As SIS.EDI.ediAFile = SIS.EDI.ediAFile.ediAFileGetByHandleIndex("DOCUMENTMASTERPDF_" & Comp, doc.t_docn & "_" & doc.t_revi)
-              If aFile IsNot Nothing Then
-                aFile.t_hndl = "J_PREORDER_WORKFLOW"
-                aFile.t_indx = tmp.WFID
-              End If
-              SIS.EDI.ediAFile.InsertData(aFile, Comp)
+              EJI.ediAFile.FileCopy("DOCUMENTMASTERPDF_" & Comp, doc.t_docn & "_" & doc.t_revi, "J_PREORDER_WORKFLOW", tmp.WFID, "")
+              'If aFile IsNot Nothing Then
+              '  aFile.t_hndl = "J_PREORDER_WORKFLOW"
+              '  aFile.t_indx = tmp.WFID
+              'End If
+              'SIS.EDI.ediAFile.InsertData(aFile, Comp)
               '=======================LOG============================
               LogIt(IndentNo, IndentLine.t_pono, logStates.HNDL)
               '======================================================
@@ -201,7 +203,7 @@ Partial Class CreateRFQ
         Try
           Cmd.ExecuteNonQuery()
         Catch ex As Exception
-          Throw New Exception(sql)
+          Throw New Exception(Sql)
         End Try
       End Using
     End Using

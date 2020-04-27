@@ -3,6 +3,7 @@ Imports System.Collections.Generic
 Imports System.Data
 Imports System.Data.SqlClient
 Imports System.ComponentModel
+Imports ejiVault
 Namespace SIS.TDS
   <DataObject()>
   Partial Public Class tdsAttachment
@@ -140,21 +141,21 @@ Namespace SIS.TDS
         _t_Refcntu = value
       End Set
     End Property
-    Public Shared Function GetByIndex(ByVal t_indx As String, Optional ByVal Comp As String = "200") As SIS.EDI.ediAFile
+    Public Shared Function GetByIndex(ByVal t_indx As String, Optional ByVal Comp As String = "200") As eji.ediAFile
       Dim t_hndl As String = "J_INVESTMENT_DECLARATION"
-      Dim Results As SIS.EDI.ediAFile = Nothing
-      Using Con As SqlConnection = New SqlConnection(SIS.SYS.SQLDatabase.DBCommon.GetBaaNConnectionString())
-        Using Cmd As SqlCommand = Con.CreateCommand()
-          Cmd.CommandType = CommandType.Text
-          Cmd.CommandText = "Select top 1 * from ttcisg132" & Comp & " where t_hndl='" & t_hndl & "' and t_indx='" & t_indx & "'"
-          Con.Open()
-          Dim Reader As SqlDataReader = Cmd.ExecuteReader()
-          If Reader.Read() Then
-            Results = New SIS.EDI.ediAFile(Reader)
-          End If
-          Reader.Close()
-        End Using
-      End Using
+      Dim Results As EJI.ediAFile = EJI.ediAFile.GetFileByHandleIndex(t_hndl, t_indx)
+      'Using Con As SqlConnection = New SqlConnection(SIS.SYS.SQLDatabase.DBCommon.GetBaaNConnectionString())
+      '  Using Cmd As SqlCommand = Con.CreateCommand()
+      '    Cmd.CommandType = CommandType.Text
+      '    Cmd.CommandText = "Select top 1 * from ttcisg132" & Comp & " where t_hndl='" & t_hndl & "' and t_indx='" & t_indx & "'"
+      '    Con.Open()
+      '    Dim Reader As SqlDataReader = Cmd.ExecuteReader()
+      '    If Reader.Read() Then
+      '      Results = New SIS.EDI.ediAFile(Reader)
+      '    End If
+      '    Reader.Close()
+      '  End Using
+      'End Using
       Return Results
     End Function
     Public Shared Function GetByUserFinYear(ByVal CardNo As String, ByVal FinYear As String) As List(Of SIS.TDS.tdsAttachment)
