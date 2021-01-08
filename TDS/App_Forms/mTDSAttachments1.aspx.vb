@@ -55,80 +55,37 @@ Partial Class mTDSAttachments1
   Private Sub DownloadAll(ByVal CardNo As String, ByVal FinYear As String)
     HttpContext.Current.Server.ScriptTimeout = Integer.MaxValue
     Dim docHndl As String = "J_INVESTMENT_DECLARATION"
-    Dim LibFolder As String = "attachmentlibrary1"
+    Dim libID As String = ""
     Dim libPath As String = ""
     Dim filePath As String = ""
     Dim fileName As String = CardNo & "_" & FinYear & ".zip"
-    Dim NeedsMapping As Boolean = False
-    Dim Mapped As Boolean = False
 
-    Dim UrlAuthority As String = HttpContext.Current.Request.Url.Authority
-    If UrlAuthority.ToLower <> "192.9.200.146" Then
-      UrlAuthority = "192.9.200.146"
-      NeedsMapping = True
-    End If
-    libPath = "D:\" & LibFolder
-    If NeedsMapping Then
-      libPath = "\\" & UrlAuthority & "\" & LibFolder
-      If ConnectToNetworkFunctions.connectToNetwork(libPath, "X:", "ISGECNET\adskvault", "adskvault@123") Then
-        Mapped = True
-      End If
-    End If
     Dim tmpFilesToDelete As New ArrayList
     Response.Clear()
     Response.AppendHeader("content-disposition", "attachment; filename=" & fileName)
     Response.ContentType = SIS.SYS.Utilities.ApplicationSpacific.ContentType(fileName)
+
     Dim UserAtchs As List(Of SIS.TDS.tdsAttachment) = SIS.TDS.tdsAttachment.GetByUserFinYear(CardNo, FinYear)
     Using zip As New ZipFile
       zip.CompressionLevel = Zlib.CompressionLevel.Level5
       For Each tDoc As SIS.TDS.tdsAttachment In UserAtchs
         If tDoc IsNot Nothing Then
+          If libID <> tDoc.t_lbcd Then
+            Dim x As ejiVault.EJI.ediALib = ejiVault.EJI.ediALib.GetLibraryByID(tDoc.t_lbcd)
+            libPath = x.LibraryPath
+            libID = x.t_lbcd
+            ejiVault.EJI.DBCommon.ConnectLibrary(libID)
+          End If
           filePath = libPath & "\" & tDoc.t_dcid
           fileName = tDoc.t_fnam
           '====================
-          '===Just to remap====
-          If Not IO.File.Exists(filePath) Then
-            libPath = "D:\" & LibFolder
-            If NeedsMapping Then
-              libPath = "\\" & UrlAuthority & "\" & LibFolder
-              If ConnectToNetworkFunctions.connectToNetwork(libPath, "X:", "ISGECNET\adskvault", "adskvault@123") Then
-                Mapped = True
-              End If
-            End If
-          End If
-          '====================
           If IO.File.Exists(filePath) Then
-            Dim tmpFile As String = Server.MapPath("~/..") & "App_Temp/" & fileName
-            If IO.File.Exists(tmpFile) Then
-              Try
-                Dim fInfo As New FileInfo(tmpFile)
-                fInfo.IsReadOnly = False
-                IO.File.Delete(tmpFile)
-              Catch ex As Exception
-              End Try
-            End If
-            Try
-              IO.File.Copy(filePath, tmpFile)
-            Catch ex As Exception
-            End Try
-            zip.AddFile(tmpFile, "Files")
-            tmpFilesToDelete.Add(tmpFile)
+            zip.AddFile(filePath).FileName = fileName
           End If
         End If
       Next
       zip.Save(Response.OutputStream)
     End Using
-    For Each str As String In tmpFilesToDelete
-      Try
-        Dim fInfo As New FileInfo(str)
-        fInfo.IsReadOnly = False
-        IO.File.Delete(str)
-      Catch ex As Exception
-      End Try
-    Next
-    If Mapped Then
-      ConnectToNetworkFunctions.disconnectFromNetwork("X:")
-    End If
     Response.End()
 
   End Sub

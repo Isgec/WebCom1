@@ -27,6 +27,7 @@ Namespace SIS.SYS.Utilities
         .Session("ApplicationID") = 30
         .Session("ApplicationDefaultPage") = "~/Default.aspx"
       End With
+      ejiVault.EJI.DBCommon.JoomlaLive = True
       ejiVault.EJI.DBCommon.BaaNLive = Convert.ToBoolean(ConfigurationManager.AppSettings("BaaNLive"))
       ejiVault.EJI.DBCommon.ERPCompany = "200"
       ejiVault.EJI.DBCommon.IsLocalISGECVault = Convert.ToBoolean(ConfigurationManager.AppSettings("IsLocalISGECVault"))
