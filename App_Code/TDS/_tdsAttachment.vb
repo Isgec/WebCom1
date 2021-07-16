@@ -23,7 +23,7 @@ Namespace SIS.TDS
       Get
         Dim Authority As String = HttpContext.Current.Request.Url.Authority
         'Commented as handled while download
-        'If Authority.ToLower = "localhost" Then Authority = "192.9.200.146"
+        'If Authority.ToLower = "localhost" Then Authority = "perk01"
         Dim tmpURL As String = HttpContext.Current.Request.Url.Scheme & Uri.SchemeDelimiter & Authority & HttpContext.Current.Request.ApplicationPath
         'Return "javascript:window.open('" & tmpURL & "/DM_mMain/App_Downloads/download.aspx?doc=" & PrimaryKey & "', 'win" & t_docn & "', 'left=20,top=20,width=100,height=100,toolbar=1,resizable=1,scrollbars=1'); return false;"
         Return tmpURL & "/TDS/App_Downloads/download.aspx?doc=" & t_indx

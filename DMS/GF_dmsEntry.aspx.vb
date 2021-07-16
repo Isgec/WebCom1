@@ -48,8 +48,9 @@ Partial Class DMS_GF_dmsEntry
 
   Private Sub gvDmsH_RowCommand(sender As Object, e As GridViewCommandEventArgs) Handles gvDmsH.RowCommand
     If e.CommandName.ToUpper = "UpdateInDMS".ToUpper Then
-      Dim tType As String = gvDmsH.DataKeys(e.CommandArgument).Values("t_type")
-      Dim tCprj As String = gvDmsH.DataKeys(e.CommandArgument).Values("t_cprj")
+      Dim keyIndex As Integer = Convert.ToInt32(e.CommandArgument) - (gvDmsH.PageIndex * gvDmsH.PageSize)
+      Dim tType As String = gvDmsH.DataKeys(keyIndex).Values("t_type")
+      Dim tCprj As String = gvDmsH.DataKeys(keyIndex).Values("t_cprj")
       Dim prj As SIS.DMS.erpDMSH = SIS.DMS.erpDMSH.GetByID(tType, tCprj)
       Dim prjfs As List(Of SIS.DMS.erpDMSD) = SIS.DMS.erpDMSD.SelectList(tType, tCprj)
       '***if id is 0, else find by ID and update description in all cases***
